@@ -100,7 +100,35 @@ The interview was held with the whole class on 16 November 2026. The quotes belo
 
 ## State of the art
 
-_To be completed: prices are being verified._
+All prices checked on 16 November 2026, excluding tax.
+
+| Solution | Maker | Licence | Pricing (date checked) | Capabilities | Sources |
+|---|---|---|---|---|---|
+| Maya (Arnold included) | Autodesk | Commercial subscription | $2,010/year per user (2026-11-16)\* | Full 3D animation suite, the client's current tool | [1] |
+| Arnold | Autodesk | Commercial subscription | $430/year per user (2026-11-16)\*; "every node on a render farm needs an Arnold license" | Film path tracer, CPU by default, command-line renderer | [2], [3] |
+| RenderMan 27 | Pixar | Commercial (free non-commercial edition) | $595 per licence + $250/year maintenance (2026-11-16) | Pixar's film renderer, CPU-only mode available | [4], [5] |
+| V-Ray | Chaos | Commercial subscription | From €39.50/month (Solo) to €94.90/month (Collection) (2026-11-16) | Production renderer, CPU, GPU or hybrid, distributed rendering | [6] |
+| Redshift | Maxon | Commercial subscription | $289/year (2026-11-16)\* | GPU-first renderer, CPU possible | [7] |
+| Cycles (Blender) | Blender project | Open source (Apache 2.0) | Free (2026-11-16) | Production path tracer, CPU or optional GPU | [8], [9] |
+| Embree | Intel | Open source (Apache 2.0) | Free (2026-11-16) | Fast CPU ray-intersection library, not a full renderer | [10] |
+| pbrt-v4 | Pharr, Jakob, Humphreys | Open source (Apache 2.0) | Free (2026-11-16) | Reference renderer from the *Physically Based Rendering* book, research and teaching | [11] |
+
+\* Vendor page blocked automated reading; price taken from the trade publication CG Channel.
+
+**My conclusion:** commercial renderers are licensed per user and per render node, so the cost grows with the farm: this is the client's $2 million problem. Open-source renderers are free but follow their own roadmap, not the studio's. Libraries such as Embree show that a fast CPU ray tracer is achievable and could later speed up an in-house renderer.
+
+Sources:
+1. https://www.cgchannel.com/2026/03/autodesk-releases-maya-2027/
+2. https://www.cgchannel.com/2026/10/autodesk-releases-arnold-7-5-4/
+3. https://help.autodesk.com/cloudhelp/ENU/AR-Core/files/arnold-setup/arnold_user_guide_arnold_setup_ac_licensing_home_html.html
+4. https://renderman.pixar.com/store/
+5. https://renderman.pixar.com/general-faq
+6. https://www.chaos.com/vray/buy-online
+7. https://www.cgchannel.com/2026/09/maxon-releases-redshift-2026-9/
+8. https://www.cycles-renderer.org/
+9. https://docs.blender.org/manual/en/latest/getting_started/about/license.html
+10. https://github.com/RenderKit/embree
+11. https://github.com/mmp/pbrt-v4
 
 ## What is ray tracing?
 
