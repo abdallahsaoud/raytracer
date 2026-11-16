@@ -2,162 +2,121 @@
 
 ## Problem statement
 
-An animation studio needs an in-house, CPU-only ray tracer that it can extend and maintain itself, because commercial licences cost it over $2 million last year and new features take 6 to 12 months to obtain, but its previous in-house renderer produced unexplained black spots and nobody left in the team could debug it.
+An animation studio needs a CPU ray tracer it can maintain and extend itself, because licences cost it over $2M last year and vendors take months to add features, but its last in-house renderer failed and nobody could debug it.
 
 ## Client interview summary
 
-The interview was held with the whole class on 16 November 2026. The quotes below are rebuilt from shared class notes and lightly condensed.
+Interview held with the whole class on 16 November 2026. Quotes taken from shared class notes.
 
-### 1. Trust in the image
+### Reliability
 
-**Need:** the same input always produces the same image.
+**Need:** same input, same image, and any defect explained within a day.
 - **Q:** "What will show you that the software meets your needs?"
-- **A:** "It produces a reliable image: if I give it some inputs, I can always expect the same output."
-- **My conclusion:** rendering must be deterministic. It can be checked by rendering the same scene twice and comparing the images pixel by pixel.
-
-**Need:** when an image has a defect, the team finds the cause within the same day.
+- **A:** "If I give it some inputs, I can always expect the same output. [...] If there is an anomaly in an image, we can work out within the same day why it happened."
 - **Q:** "Walk me through the last time you rendered with your previous tool."
-- **A:** "We kept finding black artifacts in the images [...] and the rendering time doubled. [...] Nobody could tell us why. [...] We delivered 3 weeks late."
-- **Q:** "What will show you that the software meets your needs?"
-- **A:** "If there is an anomaly in an image, we can work out within the same day why it happened and what steps we can take to correct it."
-- **My conclusion:** this is the client's biggest frustration. Diagnosis in under one working day requires tests, clear code and documentation, not only correct images.
+- **A:** "We kept finding black artifacts [...]. Nobody could tell us why. [...] We delivered 3 weeks late."
+- **My conclusion:** this is their biggest pain. Rendering must be deterministic, and the code tested and documented enough to find a bug fast.
 
-### 2. Speed
+### Speed
 
-**Need:** a full film is rendered in 2 months or less.
-- **Q:** "How long can final rendering take?"
-- **A:** "Once the creative side is done, we don't want to spend more than 2 months on final rendering."
+**Need:** a 90-minute HD film rendered in 2 months max on 100 machines.
+- **Q:** "How long can final rendering take?" **A:** "We don't want to spend more than 2 months on final rendering."
 - **Q:** "How big is the farm?" **A:** "We have up to 100 machines."
-- **Q:** "What is the size of the target? How long is the film?" **A:** "It is a 90-minute film", in HD at 24 frames per second (from my own notes).
-- **My conclusion:** 90 min × 60 s × 24 fps = 129,600 frames. 60 days × 24 h × 100 machines = 144,000 machine-hours. **One HD frame must render in about 67 minutes or less on one farm machine.**
+- **Q:** "How long is the film?" **A:** "It is a 90-minute film" (HD, 24 fps in my notes).
+- **My conclusion:** 129,600 frames for 144,000 machine-hours, so about 67 minutes max per HD frame on one machine.
 
-**Need:** designers see a quick preview of their work.
-- **Q:** "What is a reasonable render time for you?"
-- **A:** "For my team to work correctly, they need to get images really quickly."
+**Need:** quick previews for designers, high quality for the final render.
+- **Q:** "What is a reasonable render time for you?" **A:** "They need to get images really quickly."
 - **Q:** "How many creative renders do you do?" **A:** "At least 10 different pre-renders per image."
-- **A (on image size):** "For the designer, a fast preview is very important [...]. For the final scene, high image quality is very important."
-- **My conclusion:** two modes are needed, a fast, smaller preview and a high-quality final render. The preview has no target time yet (see open questions).
+- **My conclusion:** two modes, preview and final. No target time yet for the preview.
 
-### 3. Adding their own features
+### Adding features
 
-**Need:** the studio can add features itself, without waiting for a vendor.
+**Need:** add their own features without waiting for a vendor.
 - **Q:** "What is the main thing you need?"
-- **A:** "The main thing is the ability to add our own features. With Maya [...] either they say no, or it takes 6 months or a year to add a feature."
-- **Q:** "Which features do you need?"
-- **A:** "The requirements change constantly with every new project [...]. For the moment, let's say we need to be able to render spheres and planes."
-- **My conclusion:** this is the main need. Adding a new shape or feature should mean adding code, not rewriting existing code (the open/closed principle). Scope for now: spheres and planes.
+- **A:** "The ability to add our own features. With Maya [...] it takes 6 months or a year to add a feature."
+- **Q:** "Which features do you need?" **A:** "For the moment, [...] spheres and planes."
+- **My conclusion:** main need. A new shape should be added without rewriting existing code.
 
-### 4. Maintainability and documentation
+### Maintenance and documentation
 
-**Need:** the team can maintain the software after its author leaves.
+**Need:** the team keeps working on the code when its author leaves.
 - **Q:** "Is there anything we have missed?"
-- **A:** "What happens when the person who wrote the software leaves. [...] We found these architectural choices, and nobody could tell me why they had been made."
-- **Q:** "What kind of documentation do you need?"
-- **A:** "Technical people will be reading it. However, we expect some kind of user guide for the artists."
-- **My conclusion:** every important decision must be written down with its reason (architecture decision records). Two audiences: developers, and artists who set up scenes. Measurable check: a new developer builds and tests the project using only the README.
+- **A:** "What happens when the person who wrote the software leaves. [...] Nobody could tell me why [these choices] had been made."
+- **Q:** "What kind of documentation do you need?" **A:** "Technical people will be reading it. [...] We expect some kind of user guide for the artists."
+- **My conclusion:** write down each decision and its reason (ADRs), plus a user guide for artists.
 
-### 5. How the tool fits in the pipeline
+### Pipeline
 
-**Need:** a renderer with no user interface, driven by a scene file.
+**Need:** a renderer with no interface, fed by a scene file.
 - **Q:** "Do you need an interface, or is a file enough?"
-- **A:** "A standard file is created and saved by another tool, and this file is put onto the render farm [...]. No interface at this point."
-- **Q:** "Do you want us to build an editing tool, or do you just want to render?"
-- **A:** "We just want to render. It's a black box: it takes a description of the scene and produces images."
-- **My conclusion:** a command-line program: scene file in, image files out.
+- **A:** "A standard file is created and saved by another tool, [...] put onto the render farm. No interface at this point."
+- **My conclusion:** a command-line tool: scene file in, images out.
 
-### 6. Constraints
+### Constraints
 
-| Constraint | Client's words |
-|---|---|
-| CPU only | "We don't have graphics cards, so everything must be rendered by the CPU." |
-| Open source, open to partners | "Currently, everything is open source." Partners should be able "to contribute their changes correctly." |
-| Delivery date | "The software must be delivered by January 5th." |
-| Budget | "No more than 500,000 [€]. [...] We expect the investment to be cheaper." Last year: "over $2 million on licences", paid per artist and per render node. |
-| Language | C++, imposed in the project brief. |
-
-### Requirements at a glance
-
-| Requirement | Type | How to check it |
-|---|---|---|
-| Render spheres and planes from a scene file | Functional | Reference scenes render correctly |
-| Preview mode and final mode | Functional | Both modes exist |
-| User guide for artists | Functional | Guide exists and covers scene setup |
-| Same input, same image | Non-functional | Two renders are identical |
-| ≤ 67 min per HD frame per machine | Non-functional | Timed on a farm-like machine |
-| Defect diagnosed within a day | Non-functional | Tests, logs and docs point to the cause |
-| New feature without rewriting code | Non-functional | New shape added without editing existing shapes |
-| Maintainable without its author | Non-functional | Build and test from the README alone |
-| CPU only, open source, C++, 5 Jan, ≤ €500k | Constraint | Imposed |
+- CPU only: "We don't have graphics cards."
+- Open source, with partner studios contributing.
+- Delivery by 5 January.
+- Budget: "no more than 500,000" euros, against $2M of licences last year.
+- C++, imposed in the brief.
 
 ### Open questions
 
-- What is the target time and resolution for a preview?
-- Which file format does the scene tool produce? (The tool's name was unclear in the notes.)
-- Is HD 1920 × 1080? (Assumed.)
-- How many CPU cores and how much RAM does each farm machine have?
-- Which licence suits the partner studios (permissive or copyleft)?
-- What information does the team need to diagnose a defect (logs, intermediate images)?
+- Target time and resolution for a preview?
+- Scene file format produced by their tool?
+- HD = 1920 × 1080? (assumed)
+- CPU cores and RAM per farm machine?
+- Which licence suits the partner studios?
 
 ## State of the art
 
-All prices checked on 16 November 2026, excluding tax.
-
 | Solution | Maker | Licence | Pricing (date checked) | Capabilities | Sources |
 |---|---|---|---|---|---|
-| Maya (Arnold included) | Autodesk | Commercial subscription | $2,010/year per user (2026-11-16)\* | Full 3D animation suite, the client's current tool | [1] |
-| Arnold | Autodesk | Commercial subscription | $430/year per user (2026-11-16)\*; "every node on a render farm needs an Arnold license" | Film path tracer, CPU by default, command-line renderer | [2], [3] |
-| RenderMan 27 | Pixar | Commercial (free non-commercial edition) | $595 per licence + $250/year maintenance (2026-11-16) | Pixar's film renderer, CPU-only mode available | [4], [5] |
-| V-Ray | Chaos | Commercial subscription | From €39.50/month (Solo) to €94.90/month (Collection) (2026-11-16) | Production renderer, CPU, GPU or hybrid, distributed rendering | [6] |
-| Redshift | Maxon | Commercial subscription | $289/year (2026-11-16)\* | GPU-first renderer, CPU possible | [7] |
-| Cycles (Blender) | Blender project | Open source (Apache 2.0) | Free (2026-11-16) | Production path tracer, CPU or optional GPU | [8], [9] |
-| Embree | Intel | Open source (Apache 2.0) | Free (2026-11-16) | Fast CPU ray-intersection library, not a full renderer | [10] |
-| pbrt-v4 | Pharr, Jakob, Humphreys | Open source (Apache 2.0) | Free (2026-11-16) | Reference renderer from the *Physically Based Rendering* book, research and teaching | [11] |
+| Maya + Arnold | Autodesk | Commercial | $2,010/year per user (2026-11-16)\* | 3D suite, client's current tool | [1] |
+| Arnold | Autodesk | Commercial | $430/year per user; one licence per render node (2026-11-16)\* | Film path tracer, CPU | [2], [3] |
+| RenderMan 27 | Pixar | Commercial | $595 per licence + $250/year maintenance (2026-11-16) | Pixar's film renderer, CPU mode | [4] |
+| V-Ray | Chaos | Commercial | €39.50 to €94.90/month (2026-11-16) | CPU or GPU, distributed rendering | [5] |
+| Redshift | Maxon | Commercial | $289/year (2026-11-16)\* | GPU-first, CPU possible | [6] |
+| Cycles | Blender | Apache 2.0 | Free (2026-11-16) | Production path tracer, CPU or GPU | [7] |
+| Embree | Intel | Apache 2.0 | Free (2026-11-16) | CPU ray-intersection library | [8] |
+| pbrt-v4 | Pharr, Jakob, Humphreys | Apache 2.0 | Free (2026-11-16) | Reference renderer, research and teaching | [9] |
 
-\* Vendor page blocked automated reading; price taken from the trade publication CG Channel.
+\* Vendor page not readable; price from CG Channel.
 
-**My conclusion:** commercial renderers are licensed per user and per render node, so the cost grows with the farm: this is the client's $2 million problem. Open-source renderers are free but follow their own roadmap, not the studio's. Libraries such as Embree show that a fast CPU ray tracer is achievable and could later speed up an in-house renderer.
+Commercial tools are paid per user and per render node, so the bill grows with the farm. Open-source ones are free but follow their own roadmap.
 
-Sources:
 1. https://www.cgchannel.com/2026/03/autodesk-releases-maya-2027/
 2. https://www.cgchannel.com/2026/10/autodesk-releases-arnold-7-5-4/
 3. https://help.autodesk.com/cloudhelp/ENU/AR-Core/files/arnold-setup/arnold_user_guide_arnold_setup_ac_licensing_home_html.html
 4. https://renderman.pixar.com/store/
-5. https://renderman.pixar.com/general-faq
-6. https://www.chaos.com/vray/buy-online
-7. https://www.cgchannel.com/2026/09/maxon-releases-redshift-2026-9/
-8. https://www.cycles-renderer.org/
-9. https://docs.blender.org/manual/en/latest/getting_started/about/license.html
-10. https://github.com/RenderKit/embree
-11. https://github.com/mmp/pbrt-v4
+5. https://www.chaos.com/vray/buy-online
+6. https://www.cgchannel.com/2026/09/maxon-releases-redshift-2026-9/
+7. https://www.cycles-renderer.org/
+8. https://github.com/RenderKit/embree
+9. https://github.com/mmp/pbrt-v4
 
 ## What is ray tracing?
 
-Ray tracing builds an image by following light backwards. For each pixel, a ray is traced from the camera through that pixel into the scene, and the first object it hits is found. From that point, a second ray is traced towards the light source: if something blocks it, the point is in shadow, otherwise it is lit. The result gives the colour of the pixel. More rays can follow reflections or refractions for more realism, which makes the method accurate but slow. Every pixel is computed independently, so the work can be split across many machines.
+For each pixel, we send a ray from the camera into the scene and find the first object it hits. From that point, we send a second ray towards the light: if something blocks it, the point is in shadow, otherwise it is lit. That gives the pixel's colour. It is accurate but slow, and since each pixel is independent, the work can be split across many machines.
 
-Sources:
-- Peter Shirley, *Ray Tracing in One Weekend*: https://raytracing.github.io/books/RayTracingInOneWeekend.html
-- Scratchapixel, *An Overview of the Ray-Tracing Rendering Technique*: https://www.scratchapixel.com/
-- Pharr, Jakob, Humphreys, *Physically Based Rendering* (4th ed., free online): https://pbr-book.org/
+Sources: [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html), [Scratchapixel](https://www.scratchapixel.com/), [Physically Based Rendering](https://pbr-book.org/).
 
 ## What is C++?
 
 ### Programming paradigms
 
-C++ is a compiled language: the code is translated into machine instructions, with no virtual machine and no garbage collector, which makes it fast. It supports several styles: procedural (functions), object-oriented (classes, inheritance, virtual methods) and generic (templates). It also has lambdas, borrowed from functional programming.
+A compiled language, fast, with no garbage collector. It mixes procedural code, object-oriented code (classes, virtual methods) and generic code (templates).
 
 ### What to watch out for
 
-- **Memory ownership:** each object needs one clear owner. Modern C++ uses smart pointers (`std::unique_ptr`) instead of manual `new` and `delete`.
-- **Decimal numbers:** never compare `double` values with `==`; use a tolerance.
-- **Integer division:** `5 / 2` gives `2`, which can silently lose half a pixel.
-- **Implicit conversions:** the compiler can turn one type into another without being asked; `explicit` prevents it.
-- **Undefined behaviour:** some mistakes (reading outside an array, for example) do not crash reliably and give random results, the kind of bug behind "black spots nobody can explain".
+- Memory: each object needs one owner; use `std::unique_ptr` rather than `new`/`delete`.
+- Never compare `double` values with `==`, use a tolerance.
+- `5 / 2` gives `2` with integers.
+- Undefined behaviour (e.g. reading outside an array) gives random results instead of a clean crash.
 
 ### Shaping the domain model
 
-Each concept of the client's domain becomes a class named in the client's words: `Ray`, `Vector`, `Camera`, `Sphere`, `Plane`, `Scene`, `Image`. A common `Shape` interface, with a virtual `hit` method, lets the renderer treat every shape the same way: a new shape is a new class, with no change to existing code, which answers the client's main need. `std::optional` expresses "the ray hits nothing" without magic values, and the scene owns its shapes through `std::unique_ptr`.
+One class per client concept: `Ray`, `Vector`, `Camera`, `Sphere`, `Plane`, `Scene`, `Image`. A `Shape` interface with a virtual `hit` method lets us add a new shape without touching the others.
 
-Sources:
-- Bjarne Stroustrup, *A Tour of C++* (3rd ed.), Addison-Wesley, 2022.
-- C++ Core Guidelines: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
-- cppreference: https://en.cppreference.com/
+Sources: [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines), [cppreference](https://en.cppreference.com/), Bjarne Stroustrup, *A Tour of C++*, 3rd ed., 2022.
